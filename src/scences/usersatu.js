@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
+  Alert,
   FlatList,
   SafeAreaView,
   ScrollView,
@@ -15,9 +16,11 @@ import ButtonAdd from "../component/Global/ButtonAdd";
 function UserSatu({ navigation }) {
   const [data, setData] = useState();
   const [check, setCheck] = useState(false);
+  const [totalHarga, setTotalHarga] = useState(0);
+  var totalPrice = 0;
   useEffect(() => {
     getData();
-  }, []);
+  }, [totalHarga]);
 
   const getData = () => {
     const newData = dataCart.map((item) => {
@@ -25,11 +28,28 @@ function UserSatu({ navigation }) {
         ...item,
         isChecked: false,
         data: item.data.map((data) => {
-          return {
-            ...data,
-            isChecked: false,
-            quantity: 1,
-          };
+          if (data.product == "Beras") {
+            return {
+              ...data,
+              isChecked: false,
+              quantity: 1,
+              minOrder: 2,
+            };
+          }
+          if (data.product == "Yamie") {
+            return {
+              ...data,
+              isChecked: false,
+              quantity: 1,
+              minOrder: 4,
+            };
+          } else {
+            return {
+              ...data,
+              isChecked: false,
+              quantity: 1,
+            };
+          }
         }),
       };
     });
@@ -147,8 +167,7 @@ function UserSatu({ navigation }) {
     );
   };
 
-  const handleCheckout = () => {
-    let totalPrice = 0;
+  const handleTotal = () => {
     data?.forEach((item) => {
       item.data.forEach((data) => {
         if (data.isChecked) {
@@ -157,6 +176,51 @@ function UserSatu({ navigation }) {
       });
     });
     return totalPrice;
+  };
+
+  const handleCheckout = () => {
+    let dataProduct = [];
+    let totalCheck = [];
+    let minsProduct = [];
+    data?.forEach((item) => {
+      item.data.forEach((data) => {
+        if (data.isChecked && data.quantity < data.minOrder) {
+          minsProduct += 1;
+          Alert.alert(
+            "Info",
+            `Order ada pada ${data.product} kurang dari ${data.minOrder}`,
+            [
+              {
+                text: "Close",
+                style: "cancel",
+              },
+            ],
+            { cancelable: false }
+          );
+          minsProduct += 1;
+          totalCheck += 1;
+        } else if (data.isChecked) {
+          totalCheck += 1;
+          data.nama_clinic = item.clinic_name;
+          dataProduct.push(data);
+        }
+      });
+    });
+    if (totalCheck.length == 0) {
+      Alert.alert(
+        "Info",
+        "Tidak ada yang di checkout",
+        [
+          {
+            text: "Close",
+            style: "cancel",
+          },
+        ],
+        { cancelable: false }
+      );
+    } else if (totalCheck.length > 0 && minsProduct == 0) {
+      navigation.navigate("checkout", { dataProduct, totalPrice });
+    }
   };
 
   return (
@@ -205,7 +269,15 @@ function UserSatu({ navigation }) {
             </View>
           );
         })}
-        <Text style={{ padding: 8 }}>Total Harga : {handleCheckout()}</Text>
+        <Text style={{ padding: 8 }}>Total Harga : {handleTotal()}</Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => {
+            handleCheckout();
+          }}
+        >
+          <Text style={styles.text}>Checkout</Text>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -226,5 +298,18 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 8,
     flexDirection: "row",
+  },
+  button: {
+    backgroundColor: "blue",
+    width: "80%",
+    borderRadius: 10,
+    padding: 12,
+    alignSelf: "center",
+    alignItems: "center",
+  },
+  text: {
+    fontSize: 24,
+    color: "white",
+    fontWeight: "700",
   },
 });
