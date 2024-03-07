@@ -43,6 +43,14 @@ function UserSatu({ navigation }) {
               quantity: 1,
               minOrder: 4,
             };
+          }
+          if (data.product == "Mie") {
+            return {
+              ...data,
+              isChecked: false,
+              quantity: 1,
+              maxOrder: 3,
+            };
           } else {
             return {
               ...data,
@@ -63,8 +71,24 @@ function UserSatu({ navigation }) {
         if (data.product == dataCount.product) {
           if (!data.hasOwnProperty("quantity")) {
             data.quantity = 1;
+          } else if (
+            data.hasOwnProperty("maxOrder") &&
+            data.maxOrder == dataCount.quantity
+          ) {
+            Alert.alert(
+              "Info",
+              "Mencapai batas maxsimal order",
+              [
+                {
+                  text: "Cancel",
+                  style: "cancel",
+                },
+              ],
+              { cancelable: false }
+            );
+          } else {
+            data.quantity += 1;
           }
-          data.quantity += 1;
         }
       });
     });
@@ -77,7 +101,22 @@ function UserSatu({ navigation }) {
         if (data.product == dataCount.product) {
           if (!data.hasOwnProperty("quantity")) {
             data.quantity = 1;
-          } else if (data.quantity > 1) {
+          } else if (
+            data.hasOwnProperty("minOrder") &&
+            dataCount.quantity == data.minOrder
+          ) {
+            Alert.alert(
+              "Info",
+              "Mencapai batas minimal order",
+              [
+                {
+                  text: "Cancel",
+                  style: "cancel",
+                },
+              ],
+              { cancelable: false }
+            );
+          } else if (dataCount.quantity > 1) {
             data.quantity -= 1;
           }
         }
